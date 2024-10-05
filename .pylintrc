@@ -1,0 +1,3 @@
+[MESSAGES CONTROL]
+
+disable=too-few-public-methods,no-self-argument,import-error,no-member

@@ -1,7 +1,16 @@
+"""
+this file contains the Newspaper model class
+"""
+
+
 class Newspaper:
-    def __init__(self, name: str, id=None) -> None:
+    """
+    Newspaper model class
+    """
+
+    def __init__(self, name: str, newspaper_id=None) -> None:
         self.name = name
-        self.id = id
+        self.newspaper_id = newspaper_id
 
     def __str__(self) -> str:
-        return f"Newspaper({self.name}, {self.id})"
+        return f"Newspaper({self.name}, {self.newspaper_id})"
