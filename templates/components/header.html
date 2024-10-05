@@ -9,9 +9,9 @@
         <h1>Newspaper Data Analytic</h1>
 
         <ul>
-            <li><a href="">Subir Articulos</a></li>
-            <li><a href="">Reporte Semanal</a></li>
-            <li></li>
+            <li><a href="{{ url_for('upload_article') }}">Subir Articulos</a></li>
+            <li><a href="{{ url_for('weekly_report') }}">Reporte Semanal</a></li>
+            <li class="btn-populate"><a href="{{ url_for('populate_table') }}">Poblar Base de Datos</a></li>
             <li></li>
         </ul>
     </nav>

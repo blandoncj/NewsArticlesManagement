@@ -8,7 +8,7 @@ class Newspaper:
     Newspaper model class
     """
 
-    def __init__(self, name: str, newspaper_id=None) -> None:
+    def __init__(self, name: str, newspaper_id: int) -> None:
         self.name = name
         self.newspaper_id = newspaper_id
 

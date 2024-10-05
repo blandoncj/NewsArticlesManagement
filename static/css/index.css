@@ -29,12 +29,13 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 32px 16px;
-    background-color: #333;
+    background-color: #1a1a2e;
     color: white;
 }
 
 nav ul {
     display: flex;
+    align-items: center;
     list-style: none;
 }
 
@@ -45,9 +46,23 @@ nav ul li {
 nav ul li a {
     color: white;
     text-decoration: none;
+    transition: 0.3s ease-in-out;
 }
 
 nav ul li a:hover {
-    text-decoration: underline;
-    color: #f1f1f1;
+    color: #00aaff;
+}
+
+.btn-populate {
+    background-color: #00aaff;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.btn-populate:hover {
+    background-color: #0077cc;
+}
+
+.btn-populate a:hover {
+    color: white !important;
 }
