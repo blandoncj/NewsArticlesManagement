@@ -1,22 +1,37 @@
+"""
+this file contains the NewspaperDao class, which is responsible 
+for handling all the database operations related to the newspapers table.
+"""
+
 import datetime
 import MySQLdb
 from models.newspaper import Newspaper
 
 
 class NewspaperDao:
+    """
+    NewspaperDao class
+    """
+
     def __init__(self, db):
         self.db = db
 
     def get_all(self):
+        """
+        get_all method
+        """
         try:
             with self.db.connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM newspapers")
-                return [Newspaper(id=row[0], name=row[1]) for row in cursor.fetchall()]
+                return [Newspaper(row[1], row[0]) for row in cursor.fetchall()]
         except MySQLdb.Error as e:
             print(f"Error getting all newspapers: {e}")
             return None
 
     def get_weekly_article_report(self):
+        """
+        get_weekly_article_report method
+        """
         try:
             with self.db.connection.cursor() as cursor:
                 today = datetime.datetime.today()
@@ -80,9 +95,9 @@ class NewspaperDao:
                     "Domingo",
                 ]
 
-                for newspaper in final_report:
+                for newspaper, days in final_report.items():
                     ordered_report[newspaper] = {
-                        day: final_report[newspaper][day] for day in days_of_week
+                        day: days[day] for day in days_of_week
                     }
 
                 return ordered_report
@@ -92,6 +107,9 @@ class NewspaperDao:
             return None
 
     def save_article(self, article):
+        """
+        save_article method
+        """
         try:
             with self.db.connection.cursor() as cursor:
                 cursor.execute(
@@ -104,6 +122,9 @@ class NewspaperDao:
             return False
 
     def validate_last_six_months_average(self, newspaper_id, articles):
+        """
+        validate_last_six_months_average method
+        """
         try:
             with self.db.connection.cursor() as cursor:
                 query = """
