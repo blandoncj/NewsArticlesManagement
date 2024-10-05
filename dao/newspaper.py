@@ -112,12 +112,12 @@ class NewspaperDao:
         """
         try:
             with self.db.connection.cursor() as cursor:
-                print(f"Attempting to save article for newspaper_id: {article.newspaper_id}")  # Agregar esta línea
                 cursor.execute(
                     "INSERT INTO articles (newspaper_id, article_count) VALUES (%s, %s)",
                     (article.newspaper_id, article.articles_count),
                 )
                 self.db.connection.commit()
+                return True
         except MySQLdb.Error as e:
             print(f"Error saving article: {e}")
             return False
