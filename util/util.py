@@ -20,7 +20,7 @@ class Util:
         try:
             for i in range(days):
                 date = datetime.datetime.today() - datetime.timedelta(days=i)
-                article_count = random.randint(50, 150)
+                article_count = random.randint(10, 20)
                 newspaper_id = random.choice(newspaper_ids)
                 with db.connection.cursor() as cursor:
                     cursor.execute(

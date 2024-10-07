@@ -4,6 +4,7 @@ for handling all the database operations related to the newspapers table.
 """
 
 import datetime
+from decimal import Decimal
 import MySQLdb
 from models.newspaper import Newspaper
 
@@ -96,9 +97,7 @@ class NewspaperDao:
                 ]
 
                 for newspaper, days in final_report.items():
-                    ordered_report[newspaper] = {
-                        day: days[day] for day in days_of_week
-                    }
+                    ordered_report[newspaper] = {day: days[day] for day in days_of_week}
 
                 return ordered_report
 
@@ -117,12 +116,16 @@ class NewspaperDao:
                     (article.newspaper_id, article.articles_count),
                 )
                 self.db.connection.commit()
-                return True
+                return self.validate_last_six_months_average(
+                    article.newspaper_id, article.articles_count
+                )
         except MySQLdb.Error as e:
             print(f"Error saving article: {e}")
             return False
 
-    def validate_last_six_months_average(self, newspaper_id, articles):
+    def validate_last_six_months_average(
+        self, newspaper_id, articles, threshold_percentage=0.8
+    ):
         """
         validate_last_six_months_average method
         """
@@ -139,8 +142,114 @@ class NewspaperDao:
 
                 if average is None:
                     return True
-                return average <= articles
+
+                threshold = Decimal(average) * Decimal(threshold_percentage)
+                threshold = round(threshold, 2)
+                return {"success": articles >= threshold, "treshold": threshold}
 
         except MySQLdb.Error as e:
             print(f"Error getting average: {e}")
             return None
+
+    def calculate_coefficient_of_variation(self, newspaper_id):
+        """
+        calculate_coefficient_of_variation method
+        """
+        try:
+            with self.db.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT AVG(article_count) AS average, STDDEV(article_count) AS standard_deviation
+                    FROM articles 
+                    WHERE newspaper_id = %s
+                    AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                """,
+                    (newspaper_id,),
+                )
+
+                average, standard_deviation = cursor.fetchone()
+
+                if average is None:
+                    return None
+
+                coefficient_variation = (
+                    float(standard_deviation) / float(average)
+                ) * 100
+                return coefficient_variation
+        except MySQLdb.Error as e:
+            print(f"Error getting coefficient of variation: {e}")
+            return None
+
+    def calculate_interquartile_range(self, newspaper_id, article_count):
+        try:
+            with self.db.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM articles
+                    WHERE newspaper_id = %s
+                    AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                """,
+                    (newspaper_id,),
+                )
+                total = cursor.fetchone()[0]
+
+                if total == 0:
+                    return None, None
+
+                q1 = int(total * 0.25)
+                q3 = int(total * 0.75)
+
+                cursor.execute(
+                    """
+                    SELECT article_count FROM articles
+                    WHERE newspaper_id = %s
+                    AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                    ORDER BY article_count
+                    LIMIT 1 OFFSET %s
+                               """,
+                    (newspaper_id, q1),
+                )
+                q1_value = cursor.fetchone()[0] + article_count
+
+                cursor.execute(
+                    """
+                    SELECT article_count FROM articles
+                    WHERE newspaper_id = %s 
+                    AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                    ORDER BY article_count
+                    LIMIT 1 OFFSET %s
+                               """,
+                    (newspaper_id, q3),
+                )
+                q3_value = cursor.fetchone()[0] + article_count
+
+                total = q3_value - q1_value
+                return q1_value, q3_value, total
+        except MySQLdb.Error as e:
+            print(f"Error getting interquartile range: {e}")
+            return None, None, None
+
+    def analyze_variability(self, newspaper_id, article_count, high_threshold=40):
+        cv = self.calculate_coefficient_of_variation(newspaper_id)
+        cv = round(cv, 2)
+
+        if cv is None:
+            return "No se pudo calcular el coeficiente de variación."
+
+        if cv > high_threshold:
+            q1, q3, iqr = self.calculate_interquartile_range(
+                newspaper_id, article_count
+            )
+
+            if q1 is not None and iqr is not None:
+                return {
+                    "variabilidad": "alta",
+                    "cv": cv,
+                    "q1": q1,
+                    "q3": q3,
+                    "iqr": iqr,
+                }
+            else:
+                return "No se pudo calcular el rango intercuartil."
+        else:
+            return {"variabilidad": "baja", "cv": cv}

@@ -41,21 +41,51 @@ def upload_article():
             flash("La cantidad de artículos debe ser mayor a 0", "error")
             return redirect(url_for("upload_article"))
 
-        if not articles.is_integer():
+        if not isinstance(articles, int):
             flash("La cantidad de artículos debe ser un número entero", "error")
             return redirect(url_for("upload_article"))
 
         if not newspaper_controller.validate_last_six_months_average(
-            newspaper_id, articles
+            newspaper_id, articles, threshold_percentage=0.8
         ):
-            flash("El promedio de artículos no es válido", "error")
+            flash(
+                "La cantidad de artículos está por debajo del umbral del promedio.",
+                "error",
+            )
             return redirect(url_for("upload_article"))
 
-        newspaper_controller.save_article(article)
-        flash("Artículo guardado correctamente", "success")
+        result = newspaper_controller.save_article(article)
+
+        if result:
+            if result["success"]:
+                variability_result = newspaper_controller.analyze_variability(
+                    article.newspaper_id, article.articles_count
+                )
+
+                if isinstance(variability_result, dict):
+                    if variability_result["variabilidad"] == "alta":
+                        flash(
+                            f"Artículo guardado correctamente. Variabilidad alta. "
+                            f"IQR: {variability_result['iqr']} (Q1: {variability_result['q1']}, Q3: {variability_result['q3']})",
+                            "success",
+                        )
+                    else:
+                        flash(
+                            f"Artículo guardado correctamente. Variabilidad baja (CV: {variability_result['cv']})",
+                            "success",
+                        )
+                else:
+                    flash(variability_result, "error")
+            else:
+                flash(
+                    f"Artículo guardado, pero no alcanza el umbral de {result['treshold']}",
+                    "error",
+                )
+        else:
+            flash("Error al guardar el artículo", "error")
+
         return redirect(url_for("upload_article"))
 
-    newspaper_controller = NewspaperController(db)
     newspapers = newspaper_controller.get_all()
     return render_template("upload_article.html", newspapers=newspapers)
 
