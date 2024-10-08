@@ -27,11 +27,13 @@ To set up the database, follow these steps:
 2. **Create Database and Tables**:
      - Open phpMyAdmin via XAMPP.
      - Create a new database:
+
          ```sql
          CREATE DATABASE db_newspaper-analytic
          ```
+
      - Create the `articles` and `newspapers` tables:
-       
+
          ```sql
          USE db_newspaper-analytic;
 
@@ -48,8 +50,10 @@ To set up the database, follow these steps:
             FOREIGN KEY (newspaper_id) REFERENCES newspapers(id)
          );
          ```
+
 3. **Sample Data (Optional)**:
     You can insert same sample data into the `newspapers` table:
+
    ```sql
    INSERT INTO newspapers (name) VALUES ('El tiempo'), ('La Nación'), ('O Globo');
    ```
@@ -74,18 +78,19 @@ cd NewsArticlesManagement
   ```
 
 2. **Activate the virtual environment**
-  - On Windows:
+
+- On Windows:
 
     ```bash
     venv\Scripts\Activate
     ```
   
-  - On macOS/Linux:
+- On macOS/Linux:
   
     ```bash
     source venv/bin/activate
     ```
-    
+
 3. **Install the required Python packages**:
 
    ```bash
@@ -111,6 +116,7 @@ cd NewsArticlesManagement
         'development': DevelopmentConfig
     }
    ```
+
    Replace with your MySQL credentials
 
 ### Step 4: Run the Application
@@ -120,21 +126,22 @@ Finally, start the application:
 ```bash
 python main.py
 ```
+
 The application should be accessible at `http://127.0.0.1:5000`.
 
 ## How It Works
 
-1. **Loading Articles**: 
-    - Users can select a newspaper and input the number of articles published on a given date. 
+1. **Loading Articles**:
+    - Users can select a newspaper and input the number of articles published on a given date.
     - The system checks the average number of articles published on that day of the week over the past 6 months and compares it with the entered count.
   
-2. **Threshold Notification**: 
+2. **Threshold Notification**:
     - If the number of articles is below a certain threshold (e.g., 80% of the average), the system will display an on-screen notification alerting the user.
 
-3. **Weekly Report**: 
+3. **Weekly Report**:
     - The system provides a report displaying the number of articles uploaded by each newspaper during the last 7 days.
 
-4. **Mini Statistical Model**: 
+4. **Mini Statistical Model**:
     - The system calculates basic statistics such as averages, coefficients of variation, and interquartile ranges to determine whether the article count for a given newspaper is significantly low.
 
 ## Author
@@ -145,4 +152,3 @@ This project was created and maintained by **[Jacobo Blandón]**
 - Email: [jacoboblandon94@gmail.com]
 
 Feel free to reach out if you have any questions or suggestions for improvement!
-    
